@@ -51,7 +51,9 @@ async function getPrediction(features) {
     }
 }
 
-function showResult(status, reasons, score) {
+
+
+function showResult(status, reasons, score, url, features) {
     const boxId = 'phishshield-alert-box';
     const existingBox = document.getElementById(boxId);
     if (existingBox) existingBox.remove();
@@ -101,106 +103,117 @@ function showResult(status, reasons, score) {
         return;
     }
 
-    // Full-screen Modal for Phishing / Suspicious
+    // Full-screen Modal for Phishing / Suspicious (React UI converted to HTML)
     const isPhishing = status === "phishing";
-    const color = isPhishing ? "#dc2626" : "#ea580c"; // Red for phishing, Orange for suspicious
-    const bgGlow = isPhishing ? "rgba(220, 38, 38, 0.15)" : "rgba(234, 88, 12, 0.15)";
-    const icon = isPhishing ? "🛑" : "⚠️";
-    const title = isPhishing ? "Deceptive Site Ahead" : "Suspicious Site Detected";
-    const description = isPhishing
-        ? "Attackers on this site may trick you into doing something dangerous like installing software or revealing your personal information (for example, passwords, phone numbers, or credit cards)."
-        : "This site exhibits suspicious characteristics and might not be safe. Please proceed with caution and do not enter any sensitive information.";
+    const color = isPhishing ? "#dc2626" : "#ea580c"; // red-600 : orange-600
+    const alertBg = isPhishing ? "rgba(220, 38, 38, 0.1)" : "rgba(234, 88, 12, 0.1)";
+    const alertBorder = isPhishing ? "#ef4444" : "#f97316";
+    const alertText = isPhishing ? "#f87171" : "#fb923c";
+    const riskLevel = isPhishing ? "HIGH" : "MEDIUM";
+    const confScore = Math.min(Math.round(score), 99); // cap at 99%
+    const titleText = isPhishing ? "Suspicious Website Detected" : "Potentially Unsafe Site";
+    const titleDesc = isPhishing ? "This site may be attempting to steal your data." : "This site exhibits suspicious characteristics. Proceed with caution.";
+
+    const httpsText = url.startsWith('https') ? '✅ Yes' : '❌ No';
+    const httpsColor = url.startsWith('https') ? '#4ade80' : '#f87171';
+
+    const ipText = features && features.having_ip_address === 1 ? '🚫 Flagged' : '✅ Clean';
+    const ipColor = features && features.having_ip_address === 1 ? '#f87171' : '#4ade80';
 
     box.innerHTML = `
         <div style="
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(10, 10, 10, 0.98);
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(3, 7, 18, 0.98); /* bg-gray-950 equivalent */
             backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
             z-index: 999999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
+            color: white;
             animation: fadeIn 0.3s ease-out;
+            box-sizing: border-box;
         ">
-            <style>
-                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-                @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-            </style>
-            <div style="
-                background: #171717;
-                width: 90%;
-                max-width: 600px;
-                border-radius: 16px;
-                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.05), 0 0 40px ${bgGlow};
-                border-top: 6px solid ${color};
-                padding: 40px;
-                text-align: center;
-                position: relative;
-                color: #f5f5f5;
-                animation: slideUp 0.4s ease-out;
-            ">
-                <div style="font-size: 64px; margin-bottom: 20px; line-height: 1; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">${icon}</div>
-                <h1 style="color: ${color}; margin: 0 0 16px 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">${title}</h1>
-                <p style="font-size: 15px; line-height: 1.6; color: #a3a3a3; margin-bottom: 28px;">${description}</p>
-                
-                <div style="background: rgba(0,0,0,0.4); border-radius: 12px; padding: 20px; margin-bottom: 32px; text-align: left; border: 1px solid rgba(255,255,255,0.03);">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-                        <strong style="color: #e5e5e5; font-size: 14px; display: flex; align-items: center; gap: 8px;">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                            Threat Analysis Report
-                        </strong>
-                        <span style="background: ${bgGlow}; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; color: ${color}; border: 1px solid rgba(255,255,255,0.1);">Risk Score: ${score}/100</span>
-                    </div>
-                    <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #d4d4d4; line-height: 1.8;">
-                        ${reasons.map(r => `<li style="margin-bottom: 4px;">${r}</li>`).join("")}
-                    </ul>
-                </div>
-
-                <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
-                    <button onclick="window.location.href='https://google.com'" style="
-                        background: ${color};
-                        color: white;
-                        border: none;
-                        padding: 14px 32px;
-                        font-size: 16px;
-                        font-weight: 600;
-                        border-radius: 8px;
-                        cursor: pointer;
-                        box-shadow: 0 4px 14px 0 ${isPhishing ? 'rgba(220, 38, 38, 0.4)' : 'rgba(234, 88, 12, 0.4)'};
-                        transition: all 0.2s ease;
-                        width: 100%;
-                        max-width: 300px;
-                    " onmouseover="this.style.opacity='0.9'; this.style.transform='translateY(-1px)'" onmouseout="this.style.opacity='1'; this.style.transform='translateY(0)'">
-                        Back to Safety
-                    </button>
-                    
-                    <button id="phishshield-ignore-btn" style="
-                        background: transparent;
-                        color: #737373;
-                        border: 1px solid transparent;
-                        padding: 10px 24px;
-                        font-size: 14px;
-                        font-weight: 500;
-                        border-radius: 6px;
-                        cursor: pointer;
-                        transition: all 0.2s ease;
-                        text-decoration: underline;
-                        text-underline-offset: 4px;
-                        text-decoration-color: #525252;
-                    " onmouseover="this.style.color='#a3a3a3'; this.style.textDecorationColor='#a3a3a3'" onmouseout="this.style.color='#737373'; this.style.textDecorationColor='#525252'">
-                        Ignore risk and continue (unsafe)
-                    </button>
-                </div>
-                
-                <div style="margin-top: 32px; font-size: 12px; color: #525252; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500;">
-                    🛡️ Protected by PhishShield AI
-                </div>
+          <!-- The modal card -->
+          <div style="
+            width: 90%; max-width: 420px; background: #111827; /* bg-gray-900 */
+            border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5), 0 0 40px ${alertBg};
+            padding: 24px; border: 1px solid #1f2937; /* border-gray-800 */
+            box-sizing: border-box;
+          ">
+            
+            <!-- Header -->
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <div style="font-size: 24px;">🛡️</div>
+              <h1 style="font-size: 20px; font-weight: 600; margin: 0;">PhishShield AI</h1>
             </div>
+
+            <!-- Alert -->
+            <div style="background: ${alertBg}; border: 1px solid ${alertBorder}; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+              <h2 style="color: ${alertText}; font-weight: 600; font-size: 18px; margin: 0 0 4px 0;">🚨 ${titleText}</h2>
+              <p style="font-size: 14px; color: #d1d5db; margin: 0;">${titleDesc}</p>
+            </div>
+
+            <!-- Threat + Confidence -->
+            <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+              <div>
+                <p style="font-size: 14px; color: #9ca3af; margin: 0 0 4px 0;">Threat Level</p>
+                <span style="padding: 4px 12px; background: ${color}; color: white; border-radius: 9999px; font-size: 14px; font-weight: 600;">
+                  ${riskLevel}
+                </span>
+              </div>
+              <div style="text-align: right;">
+                <p style="font-size: 14px; color: #9ca3af; margin: 0 0 4px 0;">Confidence</p>
+                <span style="font-size: 24px; font-weight: 600; color: white;">
+                  ${confScore}%
+                </span>
+              </div>
+            </div>
+
+            <!-- Reasons -->
+            <div style="margin-bottom: 16px;">
+              <h3 style="font-size: 14px; color: #9ca3af; margin: 0 0 8px 0;">⚠️ Why this is risky:</h3>
+              <ul style="font-size: 14px; color: #d1d5db; margin: 0; padding-left: 0; list-style-type: none;">
+                ${reasons.map(r => `<li style="margin-bottom: 4px; display: flex; gap: 6px;"><span>•</span> <span>${r}</span></li>`).join("")}
+              </ul>
+            </div>
+
+            <!-- Security Checks -->
+            <div style="margin-bottom: 20px;">
+              <h3 style="font-size: 14px; color: #9ca3af; margin: 0 0 8px 0;">🔒 Security Checks:</h3>
+              <div style="display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 14px;">
+                <div style="color: #d1d5db;">HTTPS:</div> <div style="color: ${httpsColor}; font-weight: 500;">${httpsText}</div>
+                <div style="color: #d1d5db;">Domain Age:</div> <div style="color: #facc15; font-weight: 500;">⚠ Unknown</div>
+                <div style="color: #d1d5db;">IP Format:</div> <div style="color: ${ipColor}; font-weight: 500;">${ipText}</div>
+              </div>
+            </div>
+
+            <!-- AI Info -->
+            <div style="background: #1f2937; border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 13px; color: #9ca3af; line-height: 1.5; border: 1px solid rgba(255,255,255,0.05);">
+              🧠 <b>AI Model:</b> Phishing Detection Model<br />
+              📡 <b>Source:</b> ML + Heuristic + Local Rules
+            </div>
+
+            <!-- Buttons -->
+            <div style="display: flex; gap: 10px;">
+              <button onclick="window.history.length > 1 ? window.history.back() : window.location.href='https://google.com'" style="
+                flex: 1; background: #374151; color: white; border: none; padding: 10px 0; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+              " onmouseover="this.style.background='#4b5563'" onmouseout="this.style.background='#374151'">
+                🔙 Go Back
+              </button>
+              <button onclick="window.location.href='https://google.com'" style="
+                flex: 1; background: #dc2626; color: white; border: none; padding: 10px 0; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+              " onmouseover="this.style.background='#ef4444'" onmouseout="this.style.background='#dc2626'">
+                🚫 Block Site
+              </button>
+            </div>
+
+            <!-- Proceed -->
+            <button id="phishshield-ignore-btn" style="
+              width: 100%; margin-top: 16px; background: transparent; border: none; color: #6b7280; font-size: 13px; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; transition: all 0.2s;
+            " onmouseover="this.style.color='#9ca3af'" onmouseout="this.style.color='#6b7280'">
+              ⚠ Proceed anyway (unsafe)
+            </button>
+
+          </div>
         </div>
     `;
 
@@ -281,5 +294,5 @@ window.addEventListener("load", async () => {
     if (score >= 60) status = "phishing";
     else if (score >= 30) status = "suspicious";
 
-    showResult(status, reasons, score);
+    showResult(status, reasons, score, url, features);
 });
