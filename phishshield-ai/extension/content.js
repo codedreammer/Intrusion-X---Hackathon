@@ -52,52 +52,167 @@ async function getPrediction(features) {
 }
 
 function showResult(status, reasons, score) {
-    let color = "green";
-    let text = "Safe Website";
-
-    if (status === "suspicious") {
-        color = "orange";
-        text = "Suspicious Website";
-    }
-
-    if (status === "phishing") {
-        color = "red";
-        text = "Phishing Website";
-    }
+    const boxId = 'phishshield-alert-box';
+    const existingBox = document.getElementById(boxId);
+    if (existingBox) existingBox.remove();
 
     const box = document.createElement("div");
+    box.id = boxId;
+
+    if (status === "safe") {
+        // Subtle Toast for Safe Sites
+        box.innerHTML = `
+            <div style="
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                background: rgba(20, 20, 20, 0.95);
+                color: #fff;
+                padding: 16px 24px;
+                border-radius: 12px;
+                border-left: 4px solid #10b981;
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                z-index: 999999;
+                font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+                backdrop-filter: blur(12px);
+                border: 1px solid rgba(255,255,255,0.05);
+                transition: opacity 0.5s ease;
+            ">
+                <span style="font-size: 24px;">🛡️</span>
+                <div>
+                    <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 600; color: #10b981;">Safe Connection</h4>
+                    <div style="font-size: 13px; color: #a3a3a3;">PhishShield AI verified this site.</div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(box);
+
+        // Auto-remove safe toast after 4 seconds
+        setTimeout(() => {
+            const el = document.getElementById(boxId);
+            if (el) {
+                el.firstElementChild.style.opacity = '0';
+                setTimeout(() => el.remove(), 500);
+            }
+        }, 4000);
+        return;
+    }
+
+    // Full-screen Modal for Phishing / Suspicious
+    const isPhishing = status === "phishing";
+    const color = isPhishing ? "#dc2626" : "#ea580c"; // Red for phishing, Orange for suspicious
+    const bgGlow = isPhishing ? "rgba(220, 38, 38, 0.15)" : "rgba(234, 88, 12, 0.15)";
+    const icon = isPhishing ? "🛑" : "⚠️";
+    const title = isPhishing ? "Deceptive Site Ahead" : "Suspicious Site Detected";
+    const description = isPhishing
+        ? "Attackers on this site may trick you into doing something dangerous like installing software or revealing your personal information (for example, passwords, phone numbers, or credit cards)."
+        : "This site exhibits suspicious characteristics and might not be safe. Please proceed with caution and do not enter any sensitive information.";
 
     box.innerHTML = `
         <div style="
             position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #121212;
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            border-left: 6px solid ${color};
-            width: 300px;
-            z-index: 9999;
-            font-family: Arial, sans-serif;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(10, 10, 10, 0.98);
+            backdrop-filter: blur(10px);
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            animation: fadeIn 0.3s ease-out;
         ">
-            <h3 style="margin-top: 0;">🛡️ PhishShield AI</h3>
+            <style>
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            </style>
+            <div style="
+                background: #171717;
+                width: 90%;
+                max-width: 600px;
+                border-radius: 16px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.05), 0 0 40px ${bgGlow};
+                border-top: 6px solid ${color};
+                padding: 40px;
+                text-align: center;
+                position: relative;
+                color: #f5f5f5;
+                animation: slideUp 0.4s ease-out;
+            ">
+                <div style="font-size: 64px; margin-bottom: 20px; line-height: 1; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">${icon}</div>
+                <h1 style="color: ${color}; margin: 0 0 16px 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">${title}</h1>
+                <p style="font-size: 15px; line-height: 1.6; color: #a3a3a3; margin-bottom: 28px;">${description}</p>
+                
+                <div style="background: rgba(0,0,0,0.4); border-radius: 12px; padding: 20px; margin-bottom: 32px; text-align: left; border: 1px solid rgba(255,255,255,0.03);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                        <strong style="color: #e5e5e5; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                            Threat Analysis Report
+                        </strong>
+                        <span style="background: ${bgGlow}; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; color: ${color}; border: 1px solid rgba(255,255,255,0.1);">Risk Score: ${score}/100</span>
+                    </div>
+                    <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #d4d4d4; line-height: 1.8;">
+                        ${reasons.map(r => `<li style="margin-bottom: 4px;">${r}</li>`).join("")}
+                    </ul>
+                </div>
 
-            <p><b>Status:</b> <span style="color:${color}">${text}</span></p>
-            <p><b>Risk Score:</b> ${score}</p>
-
-            ${status !== "safe"
-            ? `<p style="margin-bottom: 5px;"><b>Why flagged:</b></p>
-                       <ul style="font-size: 13px; padding-left: 18px; margin-top: 0;">${reasons.map(r => `<li>${r}</li>`).join("")}</ul>
-                       <button onclick="window.location.href='https://google.com'" style="background:${color};color:white;padding:8px 12px;border:none;border-radius:5px;margin-top:8px;cursor:pointer;width:100%;">Leave Site Safely</button>
-                       `
-            : `<p style="color:lightgreen;">No suspicious activity detected</p>`
-        }
+                <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+                    <button onclick="window.location.href='https://google.com'" style="
+                        background: ${color};
+                        color: white;
+                        border: none;
+                        padding: 14px 32px;
+                        font-size: 16px;
+                        font-weight: 600;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        box-shadow: 0 4px 14px 0 ${isPhishing ? 'rgba(220, 38, 38, 0.4)' : 'rgba(234, 88, 12, 0.4)'};
+                        transition: all 0.2s ease;
+                        width: 100%;
+                        max-width: 300px;
+                    " onmouseover="this.style.opacity='0.9'; this.style.transform='translateY(-1px)'" onmouseout="this.style.opacity='1'; this.style.transform='translateY(0)'">
+                        Back to Safety
+                    </button>
+                    
+                    <button id="phishshield-ignore-btn" style="
+                        background: transparent;
+                        color: #737373;
+                        border: 1px solid transparent;
+                        padding: 10px 24px;
+                        font-size: 14px;
+                        font-weight: 500;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        text-decoration: underline;
+                        text-underline-offset: 4px;
+                        text-decoration-color: #525252;
+                    " onmouseover="this.style.color='#a3a3a3'; this.style.textDecorationColor='#a3a3a3'" onmouseout="this.style.color='#737373'; this.style.textDecorationColor='#525252'">
+                        Ignore risk and continue (unsafe)
+                    </button>
+                </div>
+                
+                <div style="margin-top: 32px; font-size: 12px; color: #525252; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500;">
+                    🛡️ Protected by PhishShield AI
+                </div>
+            </div>
         </div>
     `;
 
     document.body.appendChild(box);
+
+    const ignoreBtn = document.getElementById("phishshield-ignore-btn");
+    if (ignoreBtn) {
+        ignoreBtn.addEventListener("click", () => {
+            const el = document.getElementById(boxId);
+            if (el) el.remove();
+        });
+    }
 }
 
 window.addEventListener("load", async () => {

